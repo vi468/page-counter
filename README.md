@@ -69,7 +69,7 @@ npm test
 ## Структура
 
 ```
-page-counter-extension/
+page-counter/
 ├── manifest.json        # MV3, service worker как ES-модуль
 ├── background.js        # воркер: бейдж, хоткеи, клик и ПКМ по иконке, автоочистка
 ├── lib/storage.js       # chrome.storage, модель Counter, логика scope
