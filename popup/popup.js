@@ -13,6 +13,7 @@ import {
   decrementCounterIn,
 } from '../lib/storage.js';
 import { applyI18n, getLang, t } from '../lib/i18n.js';
+import { menuPlacement } from '../lib/menu-position.js';
 
 const listEl = document.getElementById('counter-list');
 const scopeIndicatorEl = document.getElementById('scope-indicator');
@@ -273,8 +274,20 @@ function showContextMenu(event, counter) {
 
   document.body.appendChild(menu);
   const rect = event.target.getBoundingClientRect();
-  menu.style.top = `${rect.bottom + 4}px`;
-  menu.style.left = `${Math.max(4, rect.right - menu.offsetWidth)}px`;
+  // Окно попапа не прокручивается: низ меню иначе обрезается, и с одним
+  // счётчиком до последних пунктов не добраться.
+  const viewportHeight =
+    (typeof window !== 'undefined' && window.innerHeight) ||
+    document.documentElement?.clientHeight ||
+    600;
+  const placement = menuPlacement({
+    anchor: { top: rect.top, bottom: rect.bottom, right: rect.right },
+    menu: { width: menu.offsetWidth, height: menu.offsetHeight },
+    viewport: { height: viewportHeight },
+  });
+  menu.style.top = `${placement.top}px`;
+  menu.style.left = `${placement.left}px`;
+  menu.style.maxHeight = `${placement.maxHeight}px`;
   openMenu = menu;
 
   setTimeout(() => document.addEventListener('click', closeContextMenu, { once: true }), 0);
