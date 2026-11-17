@@ -70,8 +70,9 @@ settings the click can be re-assigned to "open the popup".
 - `⋯` — menu: make main, rename, set value, initial value, step, reset, delete
 - "New counter" — name, scope, starting value, step
 
-**Right-click on the icon** gives reset of the main counter and a shortcut to the counter
-manager.
+**Right-click on the icon** gives reset of the main counter, a shortcut to the counter manager
+and **"Open the popup"**. The last one shows the popup once without changing the click mode:
+when the popup closes, the icon goes back to counting.
 
 **Hotkeys:** `Alt+↑` adds a step to the main counter, `Alt+↓` subtracts, `Alt+0` resets it.
 `Alt+↑` also works on a page without counters: it creates one just like the icon click and

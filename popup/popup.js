@@ -25,6 +25,16 @@ let counters = [];
 let settings = null;
 let openMenu = null;
 
+// Порт в воркер: попап, открытый из меню «Открыть попап» на один раз, по
+// закрытии возвращает иконке прежнее поведение. Ссылку держим, чтобы порт не
+// закрылся сборщиком мусора раньше времени.
+let popupPort = null;
+try {
+  popupPort = chrome.runtime.connect({ name: 'popup-open' });
+} catch {
+  // В тестах и старых контекстах runtime.connect может отсутствовать.
+}
+
 // ---------- Init ----------
 
 async function init() {

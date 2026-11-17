@@ -169,6 +169,8 @@ async function applyIconClickBehavior() {
 
 // ---------- Context menu на иконке ----------
 
+const POPUP_PAGE = 'popup/popup.html';
+
 // Флаги на жизнь service worker'а: onInstalled и onStartup могут прийти оба,
 // повторная настройка меню после успеха — no-op.
 let contextMenuReady = false;
@@ -179,7 +181,7 @@ function setupContextMenu() {
   contextMenuInProgress = true;
   chrome.contextMenus.removeAll(() => {
     let failed = false;
-    let pending = 2;
+    let pending = 3;
     const onCreated = () => {
       pending -= 1;
       if (pending > 0) return;
@@ -207,6 +209,13 @@ function setupContextMenu() {
       title: t('menu.openManager'),
       contexts: ['action'],
     });
+    // Попап живёт на иконке только в режиме «открыть попап». Пункт меню
+    // прикрепляет его на один раз, не меняя настройку.
+    create({
+      id: 'open-popup',
+      title: t('menu.openPopup'),
+      contexts: ['action'],
+    });
   });
 }
 
@@ -216,7 +225,45 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await resetPrimary({ tabId: tab.id, url: tab.url });
   } else if (info.menuItemId === 'open-manager') {
     chrome.runtime.openOptionsPage();
+  } else if (info.menuItemId === 'open-popup') {
+    await openPopupOnce(tab?.windowId);
   }
+});
+
+// В режиме счёта попап с иконки снят: клик должен прибавлять, а не открывать
+// окно. chrome.action.openPopup() открывает попап только у прикреплённой иконки
+// (иначе «Extension does not have a popup on the active tab»), поэтому меню
+// прикрепляет его временно, а попап по закрытии сообщает об этом портом.
+async function popupForCurrentSettings() {
+  const settings = await getSettings();
+  return settings.iconClickAction === 'openPopup' ? POPUP_PAGE : '';
+}
+
+async function restoreIconPopup() {
+  try {
+    await chrome.action.setPopup({ popup: await popupForCurrentSettings() });
+  } catch (err) {
+    console.warn('[page-counter] setPopup:', err?.message ?? err);
+  }
+}
+
+async function openPopupOnce(windowId) {
+  await chrome.action.setPopup({ popup: POPUP_PAGE });
+  try {
+    await chrome.action.openPopup(windowId ? { windowId } : {});
+  } catch (err) {
+    // Chrome до 127 не умеет openPopup — тогда хотя бы менеджер всех счётчиков.
+    console.warn('[page-counter] openPopup:', err?.message ?? err);
+    await restoreIconPopup();
+    chrome.runtime.openOptionsPage();
+  }
+}
+
+// Пока попап открыт, соединение живо; закрыли — возвращаем иконке прежнее
+// поведение. Порт держит воркер проснувшимся, поэтому возврат не потеряется.
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'popup-open') return;
+  port.onDisconnect.addListener(() => restoreIconPopup());
 });
 
 chrome.runtime.onInstalled.addListener(() => {
