@@ -29,10 +29,10 @@ async function updateBadgeForTab(tabId) {
     const primary = getPrimaryCounter(counters, { tabId, url: tab.url });
     const text = primary ? String(primary.value) : '';
     await chrome.action.setBadgeText({ tabId, text });
-    // Бейдж — тёмная плашка с цифрой: на терракотовой иконке акцентная
-    // подложка слилась бы с фоном, а тёмная читается в обеих темах.
-    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#1f1d1a' });
-    await chrome.action.setBadgeTextColor({ tabId, color: '#fffdf8' });
+    // Плашка бейджа — красная, как у значка внимания в Project News; цифра
+    // белая. Акцентная подложка на терракотовой иконке растворилась бы в фоне.
+    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#c0392b' });
+    await chrome.action.setBadgeTextColor({ tabId, color: '#fff' });
   } catch {
     // Таб мог быть закрыт — игнорируем.
   }
