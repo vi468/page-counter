@@ -1,96 +1,160 @@
-# Page Counter
+# Page Counter — count anything on a page
 
-Расширение для Chrome и Edge (Manifest V3), которое считает что угодно на странице: повторы, подходы, ошибки, потраченные страницы. Счётчиков может быть сколько угодно, и каждый привязан к своему «месту» — ко всему браузеру, к домену, к конкретному адресу или к одной вкладке.
+**English** · [Русский](README.ru.md)
 
-Ни сборки, ни сервера, ни аккаунта: чистый JS, всё лежит локально в браузере.
+A Chrome and Edge extension (Manifest V3) that counts anything on a page: repetitions,
+attempts, mistakes, pages read. A counter does not know what a page means — you decide
+what a click stands for. You can keep as many counters as you need, and each one belongs
+to its own place: the whole browser, one domain, one exact URL, or a single tab.
 
-## Установка
+No build step, no server, no account: plain JavaScript, and all data stays in the browser
+profile.
 
-В сторе расширения нет, ставится из исходников:
+| Popup | Settings and the counter manager |
+|---|---|
+| <img src="docs/popup.png" width="340" alt="Page Counter popup"> | <img src="docs/options.png" width="340" alt="Page Counter settings"> |
 
-1. Открыть `chrome://extensions/` (в Edge — `edge://extensions/`)
-2. Включить **Режим разработчика** в правом верхнем углу
-3. **Загрузить распакованное расширение** → выбрать папку с репозиторием
-4. На тулбаре появится иконка
+The theme follows the system setting; the dark variant is in
+[`docs/popup-dark.png`](docs/popup-dark.png) and [`docs/options-dark.png`](docs/options-dark.png).
 
-После правок в коде — кнопка 🔄 на карточке расширения, чтобы браузер перечитал файлы.
+## Contents
 
-## Как пользоваться
+- [What it is](#what-it-is)
+- [Install](#install)
+- [How to use](#how-to-use)
+- [Scope](#scope)
+- [Data](#data)
+- [Tests](#tests)
+- [Development](#development)
+- [Limitations](#limitations)
 
-**Клик по иконке** прибавляет к главному счётчику текущей страницы его шаг (по умолчанию 1). Если подходящего счётчика ещё нет, он создастся сам со scope из настроек и сразу получит значение 1. Шаг — свойство счётчика, задаётся в его меню в попапе. В настройках клик можно переназначить на «открыть попап».
+## What it is
 
-**Попап** показывает счётчики, которые относятся к текущей странице:
+- **Any meaning.** "Pages read", "attempts", "mistakes", "chapters" — a counter has a name
+  and a step, and you decide what it counts.
+- **Four scopes.** `global`, `domain`, `url`, `tab`: from the whole browser down to one tab.
+- **Several counters at once.** One of them is the main one and shows its value on the
+  toolbar icon.
+- **Keyboard first.** `Alt+↑`, `Alt+↓` and `Alt+0` work without opening the popup.
+- **Everything local.** `chrome.storage.local` only: no network requests, no
+  `host_permissions`, no content scripts.
 
-- `★` — сделать главным; его число видно на иконке
-- клик по имени — переименовать
-- клик по числу — задать значение вручную
-- `−` / `+` — шаг вниз и вверх (шаг счётчика)
-- `⋯` — меню: сделать главным, переименовать, задать значение, начальное значение, шаг, сбросить, удалить
-- «+ Новый счётчик» — имя, scope, стартовое значение, шаг
+## Install
 
-**Правый клик по иконке**:
+There is no store listing, so the extension is loaded from source:
 
-- «Сбросить главный счётчик»
-- «Открыть менеджер счётчиков»
+1. Open `chrome://extensions/` (in Edge — `edge://extensions/`)
+2. Turn on **Developer mode** in the top right corner
+3. **Load unpacked** → pick the repository folder
+4. The icon appears on the toolbar
 
-**Хоткеи**: `Alt+↑` прибавить шаг главного счётчика, `Alt+↓` убавить, `Alt+0` сбросить главный счётчик. `Alt+↑` работает и на странице без счётчиков: он заведёт счётчик так же, как клик по иконке, и поставит 1. Переназначаются на `chrome://extensions/shortcuts`.
+After code changes press 🔄 on the extension card so the browser re-reads the files.
 
-**Обнуление стирает счётчик только с клавиатуры.** `Alt+↓` до конца и `Alt+0` убирают счётчик из памяти: считать в нём нечего, а сочетанием клавиш до кнопки удаления не дотянуться. Мышью спокойнее — «−» и «↺» в попапе и менеджере и ручной ноль просто ставят значение, счётчик остаётся в списке, рядом с ним своя кнопка удаления. Счётчик с начальным значением больше нуля сбрасывается в это значение. Заново счётчик заводит `Alt+↑` или клик по иконке — со значением 1.
+## How to use
 
-**Менеджер счётчиков** живёт на странице настроек и показывает сразу все счётчики, сгруппированные по scope, — не только те, что относятся к текущей странице. Здесь удобно поправить значение, если пере- или недокликал, находясь уже на другом сайте.
+**Clicking the icon** adds the main counter's step to the current page (step 1 by default).
+If there is no matching counter yet, one is created with the scope from settings and gets
+the value 1. The step is a property of a counter and is set in its menu in the popup. In
+settings the click can be re-assigned to "open the popup".
 
-**Тема** следует за системой: при тёмном режиме ОС попап и настройки тёмные, при светлом — светлые. Отдельного переключателя темы нет — как и у самого браузера, смена происходит на лету, без перезагрузки.
+**The popup** shows the counters that belong to the current page:
+
+- `★` — make it the main one; its number is shown on the icon
+- click on a name — rename the counter
+- click on a number — set the value manually
+- `−` / `+` — step down and up by the counter's step
+- `⋯` — menu: make main, rename, set value, initial value, step, reset, delete
+- "New counter" — name, scope, starting value, step
+
+**Right-click on the icon** gives reset of the main counter and a shortcut to the counter
+manager.
+
+**Hotkeys:** `Alt+↑` adds a step to the main counter, `Alt+↓` subtracts, `Alt+0` resets it.
+`Alt+↑` also works on a page without counters: it creates one just like the icon click and
+sets it to 1. All three can be re-assigned at `chrome://extensions/shortcuts`.
+
+**Only the keyboard deletes counters.** `Alt+↓` down to zero and `Alt+0` remove the counter
+from storage: there is nothing left to count, and a hotkey has no delete button to reach. With
+the mouse a zero is just a value — `−` and `↺` in the popup and in the manager, or a manually
+typed zero, leave the counter in the list next to its own delete button. A counter with an
+initial value above zero is reset to that value. `Alt+↑` or a click on the icon creates it
+again, with the value 1.
+
+**The counter manager** lives on the settings page and shows every counter at once, grouped
+by scope, not only the ones relevant to the current page. It is the place to fix a value when
+you over- or under-clicked on some other site.
+
+**The theme** follows the system: dark OS, dark popup and settings; light OS, light ones.
+There is no separate theme switch — like the browser itself, the change happens live, without
+a reload.
 
 ## Scope
 
-Scope решает, к чему привязан счётчик.
+The scope decides what a counter belongs to.
 
-| Scope    | Область                                      |
+| Scope    | Area                                         |
 |----------|----------------------------------------------|
-| `domain` | Все страницы одного домена — по умолчанию    |
-| `url`    | Точный адрес: origin + путь + query          |
-| `tab`    | Только одна вкладка                          |
-| `global` | Один на весь браузер                         |
+| `domain` | All pages of one domain — the default        |
+| `url`    | Exact address: origin + path + query         |
+| `tab`    | One tab only                                 |
+| `global` | One counter for the whole browser            |
 
-На иконке показывается главный счётчик — тот, что выбран среди подходящих текущей странице. `global` подходит всегда, `domain` — если совпал домен, и так далее.
+The toolbar icon shows the main counter: the one marked as main among those that fit the
+current page. `global` always fits, `domain` fits when the hostname matches, and so on.
 
-## Данные
+## Data
 
-Всё хранится в `chrome.storage.local`: на этой машине, в профиле браузера. Расширение не делает сетевых запросов, не имеет `host_permissions` и не читает содержимое страниц — контент-скриптов в нём нет.
+Everything is stored in `chrome.storage.local`: on this machine, inside the browser profile.
+The extension makes no network requests, has no `host_permissions` and does not read page
+content — there are no content scripts.
 
-Бэкап и перенос — **Настройки → Экспорт JSON**, обратно через **Импорт JSON**. Импорт заменяет текущие счётчики целиком.
+Backup and moving — **Settings → Export JSON**, back through **Import JSON**. Import replaces
+the current counters entirely; broken entries are dropped and the count of skipped ones is
+shown.
 
-## Тесты
+## Tests
 
 ```bash
 npm test
 ```
 
-Это `node --test` без внешних зависимостей. Тесты мокают `chrome` и проверяют поведение service worker'а — например, что контекстное меню регистрируется ровно один раз за старт, а не дважды.
+That is `node --test` with no external dependencies. The tests mock `chrome` and check the
+service worker behaviour — for example, that the context menu is registered exactly once per
+startup rather than twice.
 
-## Структура
+## Development
+
+Rules of the repository, the data model, architectural constraints and the list of known
+traps live in [AGENTS.md](AGENTS.md) (in Russian). In short: no direct pushes to `main`, work
+happens in a branch, tests are `npm test`.
+
+There is no build step: the repository folder is the extension. The README is bilingual —
+this file is the default, the Russian version is [README.ru.md](README.ru.md).
 
 ```
 page-counter/
-├── manifest.json        # MV3, service worker как ES-модуль
-├── theme.css            # токены светлой и тёмной темы, общая база страниц
-├── background.js        # воркер: бейдж, хоткеи, клик и ПКМ по иконке, автоочистка
-├── lib/storage.js       # chrome.storage, модель Counter, логика scope
-├── popup/               # счётчики текущей страницы
-├── options/             # настройки, менеджер всех счётчиков, экспорт и импорт
+├── manifest.json        # MV3, service worker as an ES module
+├── theme.css            # light/dark tokens, shared page base
+├── background.js        # worker: badge, hotkeys, icon click and right-click, tab cleanup
+├── lib/storage.js       # chrome.storage, Counter model, scope logic
+├── popup/               # counters of the current page
+├── options/             # settings, manager of all counters, export and import
 ├── tests/               # node --test
-├── .githooks/           # pre-push: защита main от прямых пушей
-├── AGENTS.md            # правила разработки для агентов
-└── icons/               # 16/48/128 PNG + исходный SVG
+├── docs/                # screenshots for this README
+├── .githooks/           # pre-push: protection of main from direct pushes
+├── AGENTS.md            # development rules for agents
+└── icons/               # 16/48/128 PNG and the source SVG
 ```
 
-## Разработка
+## Limitations
 
-Правила работы с репозиторием, модель данных, архитектурные ограничения и список грабель — в [AGENTS.md](AGENTS.md). Коротко: в `main` не пушим, работа идёт в ветке, тесты — `npm test`.
-
-## Ограничения
-
-- Счётчик считает **целые действия** и не уходит ниже нуля: дробных значений и шагов не бывает, в минус он тоже не уходит.
-- **Счётчик со scope `tab` исчезает вместе с вкладкой.** Так и задумано: он привязан к конкретному открытому табу, а не к сайту. Нужен долгоживущий — берите `domain` или `url`.
-- На иконке видно только главный счётчик активной вкладки. Остальные счётчики там не мелькают.
-- Главный счётчик один на контекст: если сделать главным другой, прежний теряет флаг.
+- A counter counts **whole actions** and never goes below zero: there are no fractional
+  values or steps, and it cannot become negative.
+- **A `tab` counter disappears together with the tab.** That is the point: it belongs to one
+  open tab, not to a site. Need a long-lived one — use `domain` or `url`.
+- The toolbar icon shows only the main counter of the active tab. Other counters never
+  appear there.
+- The main counter is one per context: making another one main clears the flag on the
+  previous one.
+- **The interface is in Russian for now.** There is no locale switching yet — the popup,
+  settings and context menu are Russian regardless of the browser language.

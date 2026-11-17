@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="24" fill="#2d7ff9"/>
-  <text x="64" y="86" font-family="-apple-system, Helvetica, sans-serif"
-        font-size="72" font-weight="700" text-anchor="middle" fill="#fff">#</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#c96442"/>
+      <stop offset="0.78" stop-color="#a94e31"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+  <text x="64" y="86" font-family="-apple-system, BlinkMacSystemFont, Helvetica, sans-serif"
+        font-size="72" font-weight="700" text-anchor="middle" fill="#fffdf8">#</text>
 </svg>
