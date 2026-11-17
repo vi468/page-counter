@@ -7,7 +7,7 @@ await import('../background.js');
 
 // ---------- Тест ----------
 
-test('onInstalled + onStartup в одном жизненном цикле создают ровно два пункта меню', () => {
+test('onInstalled + onStartup в одном жизненном цикле создают ровно три пункта меню', () => {
   const { onInstalled, onStartup } = chrome.runtime;
   assert.equal(onInstalled.listeners.length, 1, 'onInstalled должен иметь обработчик');
   assert.equal(onStartup.listeners.length, 1, 'onStartup должен иметь обработчик');
@@ -15,8 +15,8 @@ test('onInstalled + onStartup в одном жизненном цикле соз
   onInstalled.listeners[0]();
   onStartup.listeners[0]();
 
-  assert.equal(calls.create.length, 2, 'contextMenus.create должен быть вызван ровно 2 раза');
-  assert.deepEqual([...calls.create].sort(), ['open-manager', 'reset-primary']);
+  assert.equal(calls.create.length, 3, 'contextMenus.create должен быть вызван ровно 3 раза');
+  assert.deepEqual([...calls.create].sort(), ['open-manager', 'reset-primary', 'site-popup-mode']);
 
   const firstRemoveAll = calls.events.indexOf('removeAll');
   assert.ok(firstRemoveAll !== -1, 'removeAll должен вызываться');

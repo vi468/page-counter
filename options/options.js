@@ -1,6 +1,7 @@
 import {
   getSettings,
   saveSettings,
+  updateSettings,
   getCounters,
   mutateCounters,
   updateCounterIn,
@@ -129,6 +130,68 @@ importCancelBtn.addEventListener('click', () => {
   importConfirmEl.hidden = true;
   importResultEl.hidden = true;
 });
+
+// ---------- Режим клика по сайтам ----------
+
+const sitesListEl = document.getElementById('sites-list');
+
+async function setSiteMode(host, mode) {
+  const settings = await getSettings();
+  const siteModes = { ...settings.siteModes };
+  if (mode === null) delete siteModes[host];
+  else siteModes[host] = mode;
+  await updateSettings({ siteModes });
+  await renderSites();
+}
+
+async function renderSites() {
+  const settings = await getSettings();
+  const entries = Object.entries(settings.siteModes).sort(([a], [b]) => a.localeCompare(b));
+  sitesListEl.innerHTML = '';
+
+  if (entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'manager-empty';
+    empty.textContent = t('options.sitesEmpty');
+    sitesListEl.appendChild(empty);
+    return;
+  }
+
+  for (const [host, mode] of entries) {
+    const row = document.createElement('div');
+    row.className = 'site-row';
+
+    const name = document.createElement('span');
+    name.className = 'site-host';
+    name.textContent = host;
+    row.appendChild(name);
+
+    const select = document.createElement('select');
+    select.className = 'site-mode';
+    for (const [value, key] of [
+      ['count', 'options.siteModeCount'],
+      ['popup', 'options.siteModePopup'],
+    ]) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = t(key);
+      select.appendChild(option);
+    }
+    select.value = mode;
+    select.addEventListener('change', () => setSiteMode(host, select.value));
+    row.appendChild(select);
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'site-del';
+    del.textContent = '×';
+    del.title = t('options.siteDeleteTitle');
+    del.addEventListener('click', () => setSiteMode(host, null));
+    row.appendChild(del);
+
+    sitesListEl.appendChild(row);
+  }
+}
 
 // ---------- Counters manager ----------
 
@@ -392,11 +455,13 @@ async function deleteCounter(id) {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.counters) {
-    renderManager();
-  }
+  if (area !== 'local') return;
+  if (changes.counters) renderManager();
+  // Режим по сайту мог переключить пункт в ПКМ по иконке — список догоняет.
+  if (changes.settings) renderSites();
 });
 
 await renderManager();
+await renderSites();
 
 await load();
