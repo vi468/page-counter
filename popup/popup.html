@@ -9,18 +9,31 @@
   <body>
     <header>
       <div id="scope-indicator" class="scope-indicator"></div>
-      <button id="open-options" class="icon-btn" title="Настройки">⚙</button>
+      <button
+        id="open-options"
+        class="icon-btn"
+        title="Настройки"
+        data-i18n-title="popup.openSettings"
+      >⚙</button>
     </header>
 
     <ul id="counter-list" class="counter-list"></ul>
 
     <section class="new-counter">
-      <button id="toggle-new" class="primary-btn">+ Новый счётчик</button>
+      <button id="toggle-new" class="primary-btn" data-i18n="popup.newCounter">
+        + Новый счётчик
+      </button>
       <form id="new-form" class="new-form" hidden>
-        <input id="new-name" type="text" placeholder="Название" required />
+        <input
+          id="new-name"
+          type="text"
+          placeholder="Название"
+          data-i18n-placeholder="popup.namePlaceholder"
+          required
+        />
         <div class="row">
           <label>
-            Scope:
+            <span>Scope:</span>
             <select id="new-scope">
               <option value="domain">Domain</option>
               <option value="tab">Tab</option>
@@ -29,17 +42,19 @@
             </select>
           </label>
           <label>
-            Start:
+            <span data-i18n="popup.start">Старт:</span>
             <input id="new-initial" type="number" value="0" step="1" min="0" />
           </label>
           <label>
-            Step:
+            <span data-i18n="popup.step">Шаг:</span>
             <input id="new-step" type="number" value="1" step="1" min="1" />
           </label>
         </div>
         <div class="row">
-          <button type="submit" class="primary-btn">Создать</button>
-          <button type="button" id="cancel-new" class="ghost-btn">Отмена</button>
+          <button type="submit" class="primary-btn" data-i18n="popup.create">Создать</button>
+          <button type="button" id="cancel-new" class="ghost-btn" data-i18n="common.cancel">
+            Отмена
+          </button>
         </div>
       </form>
     </section>

@@ -12,6 +12,7 @@ import {
   incrementCounterIn,
   decrementCounterIn,
 } from '../lib/storage.js';
+import { applyI18n, getLang, t } from '../lib/i18n.js';
 
 const listEl = document.getElementById('counter-list');
 const scopeIndicatorEl = document.getElementById('scope-indicator');
@@ -27,6 +28,11 @@ let openMenu = null;
 // ---------- Init ----------
 
 async function init() {
+  // Статичную вёрстку переводим до первой отрисовки: язык уже известен из
+  // chrome.i18n.getUILanguage() (или ?lang=ru|en для скриншотов).
+  applyI18n();
+  if (document.documentElement) document.documentElement.lang = getLang();
+
   // Настройки грузим всегда: обработчики кнопок читают settings.defaultScope
   // и не должны падать, даже если активной вкладки нет.
   const data = await getAll();
@@ -35,7 +41,7 @@ async function init() {
 
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   if (!tab?.id || !tab.url) {
-    scopeIndicatorEl.textContent = 'Нет активной страницы';
+    scopeIndicatorEl.textContent = t('popup.noActivePage');
     toggleNewBtn.hidden = true;
     newFormEl.hidden = true;
     return;
@@ -56,7 +62,7 @@ function render() {
   if (relevant.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty';
-    li.textContent = 'Нет счётчиков. Создайте новый ↓';
+    li.textContent = t('popup.empty');
     listEl.appendChild(li);
     return;
   }
@@ -77,7 +83,7 @@ function renderCounter(c) {
   const star = document.createElement('button');
   star.className = 'star-btn';
   star.textContent = c.isPrimary ? '★' : '☆';
-  star.title = 'Сделать главным';
+  star.title = t('popup.makePrimary');
   star.addEventListener('click', () => setPrimary(c.id));
   li.appendChild(star);
 
@@ -85,7 +91,7 @@ function renderCounter(c) {
   const name = document.createElement('span');
   name.className = 'counter-name';
   name.textContent = c.name;
-  name.title = 'Переименовать';
+  name.title = t('common.rename');
   name.addEventListener('click', () => renameCounter(c.id));
   li.appendChild(name);
 
@@ -100,7 +106,7 @@ function renderCounter(c) {
   const value = document.createElement('span');
   value.className = 'counter-value';
   value.textContent = formatValue(c.value);
-  value.title = 'Задать значение';
+  value.title = t('common.setValue');
   value.addEventListener('click', () => setValueManually(c.id));
   li.appendChild(value);
 
@@ -159,7 +165,7 @@ async function setPrimary(id) {
 async function renameCounter(id) {
   const current = counters.find((c) => c.id === id);
   if (!current) return;
-  const name = prompt('Название:', current.name);
+  const name = prompt(t('popup.namePrompt'), current.name);
   if (name == null) return;
   const trimmed = name.trim();
   if (!trimmed) return;
@@ -170,7 +176,7 @@ async function renameCounter(id) {
 async function setValueManually(id) {
   const current = counters.find((c) => c.id === id);
   if (!current) return;
-  const raw = prompt('Значение:', String(current.value));
+  const raw = prompt(t('popup.valuePrompt'), String(current.value));
   if (raw == null) return;
   const v = Number(raw);
   if (!Number.isInteger(v) || v < 0) return;
@@ -190,7 +196,7 @@ async function resetCounter(id) {
 async function setInitial(id) {
   const current = counters.find((c) => c.id === id);
   if (!current) return;
-  const raw = prompt('Начальное значение:', String(current.initialValue));
+  const raw = prompt(t('popup.initialPrompt'), String(current.initialValue));
   if (raw == null) return;
   const v = Number(raw);
   if (!Number.isInteger(v) || v < 0) return;
@@ -203,7 +209,7 @@ async function setInitial(id) {
 async function setStep(id) {
   const current = counters.find((c) => c.id === id);
   if (!current) return;
-  const raw = prompt('Шаг:', String(current.step));
+  const raw = prompt(t('popup.stepPrompt'), String(current.step));
   if (raw == null) return;
   const v = Number(raw);
   if (!Number.isInteger(v) || v <= 0) return;
@@ -214,7 +220,7 @@ async function setStep(id) {
 }
 
 async function deleteCounter(id) {
-  if (!confirm('Удалить счётчик?')) return;
+  if (!confirm(t('popup.deleteConfirm'))) return;
   counters = await mutateCounters((all) => {
     if (!all.some((c) => c.id === id)) return all;
     return all.filter((c) => c.id !== id);
@@ -232,14 +238,21 @@ function showContextMenu(event, counter) {
   menu.className = 'context-menu';
 
   const items = [
-    { label: counter.isPrimary ? '★ Уже главный' : '★ Сделать главным', fn: () => setPrimary(counter.id), disabled: counter.isPrimary },
-    { label: 'Переименовать', fn: () => renameCounter(counter.id) },
-    { label: 'Задать значение', fn: () => setValueManually(counter.id) },
-    { label: 'Начальное значение', fn: () => setInitial(counter.id) },
-    { label: 'Шаг', fn: () => setStep(counter.id) },
-    { label: 'Сбросить к ' + formatValue(counter.initialValue), fn: () => resetCounter(counter.id) },
+    {
+      label: counter.isPrimary ? t('popup.menu.alreadyPrimary') : t('popup.menu.makePrimary'),
+      fn: () => setPrimary(counter.id),
+      disabled: counter.isPrimary,
+    },
+    { label: t('popup.menu.rename'), fn: () => renameCounter(counter.id) },
+    { label: t('popup.menu.setValue'), fn: () => setValueManually(counter.id) },
+    { label: t('popup.menu.initial'), fn: () => setInitial(counter.id) },
+    { label: t('popup.menu.step'), fn: () => setStep(counter.id) },
+    {
+      label: t('popup.menu.reset', { value: formatValue(counter.initialValue) }),
+      fn: () => resetCounter(counter.id),
+    },
     { separator: true },
-    { label: 'Удалить', fn: () => deleteCounter(counter.id), danger: true },
+    { label: t('popup.menu.delete'), fn: () => deleteCounter(counter.id), danger: true },
   ];
 
   for (const item of items) {

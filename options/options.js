@@ -10,11 +10,18 @@ import {
   incrementCounterIn,
   decrementCounterIn,
 } from '../lib/storage.js';
+import { applyI18n, getLang, t } from '../lib/i18n.js';
 
 // Внимание: страница настроек открывается встроенной в chrome://extensions, в
 // кросс-доменном iframe. Chrome глушит там confirm/prompt/alert — они молча
 // возвращают false/null. Поэтому на этой странице модальных окон нет: любое
 // действие делается инлайн, а результат показывается текстом на странице.
+
+// Язык интерфейса приходит из системы (chrome.i18n.getUILanguage); вручную
+// задаётся только для скриншотов: options.html?lang=ru|en.
+if (document.documentElement) document.documentElement.lang = getLang();
+applyI18n();
+document.title = t('options.pageTitle');
 
 const form = document.getElementById('settings-form');
 const defaultScopeEl = document.getElementById('defaultScope');
@@ -66,7 +73,7 @@ importBtn.addEventListener('click', () => importFile.click());
 let pendingImport = null; // { counters, settings, note }
 
 function importNote(dropped) {
-  return dropped ? ` Некорректных записей пропущено: ${dropped}.` : '';
+  return dropped ? ' ' + t('options.importDropped', { n: dropped }) : '';
 }
 
 function showImportResult(text, isError = false) {
@@ -81,20 +88,20 @@ importFile.addEventListener('change', async () => {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    if (!Array.isArray(data.counters)) throw new Error('Некорректный формат');
+    if (!Array.isArray(data.counters)) throw new Error(t('options.importBadFormat'));
 
     const { counters, dropped } = sanitizeCounters(data.counters);
-    if (counters.length === 0) throw new Error('в файле нет ни одного корректного счётчика');
+    if (counters.length === 0) throw new Error(t('options.importNoCounters'));
 
     pendingImport = { counters, settings: data.settings, note: importNote(dropped) };
     importConfirmText.textContent =
-      `Импортировать ${counters.length} счётчик(ов)? Текущие будут заменены.${pendingImport.note}`;
+      t('options.importConfirm', { n: counters.length }) + pendingImport.note;
     importResultEl.hidden = true;
     importConfirmEl.hidden = false;
   } catch (err) {
     pendingImport = null;
     importConfirmEl.hidden = true;
-    showImportResult('Ошибка импорта: ' + err.message, true);
+    showImportResult(t('options.importError', { message: err.message }), true);
   } finally {
     importFile.value = '';
   }
@@ -111,9 +118,9 @@ importApplyBtn.addEventListener('click', async () => {
     if (settings) await saveSettings(settings);
     await load();
     await renderManager();
-    showImportResult(`Импорт завершён. Загружено счётчиков: ${loaded}.${note}`);
+    showImportResult(t('options.importDone', { n: loaded }) + note);
   } catch (err) {
-    showImportResult('Ошибка импорта: ' + err.message, true);
+    showImportResult(t('options.importError', { message: err.message }), true);
   }
 });
 
@@ -138,7 +145,7 @@ const SCOPE_LABEL = {
 function scopeDetail(scope) {
   switch (scope.type) {
     case 'global':
-      return '(все страницы)';
+      return t('options.allPages');
     case 'domain':
       return scope.domain;
     case 'url':
@@ -162,7 +169,7 @@ async function renderManager() {
   if (counters.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'manager-empty';
-    empty.textContent = 'Счётчиков пока нет. Откройте попап на любой странице и создайте.';
+    empty.textContent = t('options.emptyManager');
     managerEl.appendChild(empty);
     return;
   }
@@ -246,7 +253,7 @@ function renderManagerItem(c) {
   const name = document.createElement('span');
   name.className = 'name';
   name.textContent = c.name;
-  name.title = 'Переименовать';
+  name.title = t('common.rename');
   name.addEventListener('click', () => {
     startInlineEdit(li, name, {
       type: 'text',
@@ -271,7 +278,7 @@ function renderManagerItem(c) {
   const value = document.createElement('span');
   value.className = 'value';
   value.textContent = formatValue(c.value);
-  value.title = 'Задать значение';
+  value.title = t('common.setValue');
   value.addEventListener('click', () => {
     startInlineEdit(li, value, {
       type: 'number',
@@ -288,8 +295,8 @@ function renderManagerItem(c) {
 
   const step = document.createElement('span');
   step.className = 'step';
-  step.textContent = `шаг ${formatValue(c.step)}`;
-  step.title = 'Изменить шаг';
+  step.textContent = t('options.stepLabel', { n: formatValue(c.step) });
+  step.title = t('options.setStepTitle');
   step.addEventListener('click', () => {
     startInlineEdit(li, step, {
       type: 'number',
@@ -316,7 +323,7 @@ function renderManagerItem(c) {
   const reset = document.createElement('button');
   reset.className = 'mini-btn';
   reset.textContent = '↺';
-  reset.title = `Сбросить к ${formatValue(c.initialValue)}`;
+  reset.title = t('options.resetTo', { value: formatValue(c.initialValue) });
   reset.addEventListener('click', () => resetCounter(c.id));
   li.appendChild(reset);
 
@@ -331,7 +338,7 @@ function renderDeleteButton(c) {
   const del = document.createElement('button');
   del.className = 'mini-btn danger';
   del.textContent = '×';
-  del.title = 'Удалить';
+  del.title = t('common.delete');
 
   let armed = false;
   let timer = null;
@@ -340,15 +347,15 @@ function renderDeleteButton(c) {
     armed = false;
     timer = null;
     del.textContent = '×';
-    del.title = 'Удалить';
+    del.title = t('common.delete');
     del.classList.remove('confirm');
   };
 
   del.addEventListener('click', async () => {
     if (!armed) {
       armed = true;
-      del.textContent = 'удалить?';
-      del.title = 'Нажмите ещё раз, чтобы удалить';
+      del.textContent = t('options.deleteConfirm');
+      del.title = t('options.deleteConfirmTitle');
       del.classList.add('confirm');
       timer = setTimeout(disarm, 3000);
       return;
