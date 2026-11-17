@@ -99,6 +99,7 @@ input[type="text"]:focus { outline: none; border-color: var(--accent); }
   font-weight: 650;
 }
 
+.sites-section,
 .counters-section,
 .data-section {
   margin-top: 26px;
@@ -235,6 +236,57 @@ input[type="text"]:focus { outline: none; border-color: var(--accent); }
   border-color: var(--danger);
   color: var(--bg);
 }
+
+.sites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.site-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 9px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: border-color .15s ease;
+}
+.site-row:hover { border-color: var(--line-2); }
+
+.site-host {
+  overflow: hidden;
+  color: var(--text);
+  font: 12.5px ui-monospace, SFMono-Regular, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-row .site-mode {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: 12.5px var(--font);
+}
+
+.site-del {
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .15s ease;
+}
+.site-del:hover { border-color: var(--danger); }
 
 .manager-empty {
   padding: 20px;

@@ -13,6 +13,9 @@ import {
   setCounterValueIn,
   incrementCounterIn,
   decrementCounterIn,
+  getDomainFromUrl,
+  siteModeForUrl,
+  updateSettings,
 } from './lib/storage.js';
 import { t } from './lib/i18n.js';
 
@@ -79,11 +82,20 @@ async function getActiveCtx() {
 
 // ---------- Events ----------
 
-// Обновление бейджа при смене таба/URL.
-chrome.tabs.onActivated.addListener(({ tabId }) => updateBadgeForTab(tabId));
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+// Обновление бейджа и режима иконки при смене таба/URL.
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+  updateBadgeForTab(tabId);
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    await syncTabPopup(tab);
+  } catch {
+    // Вкладку могли закрыть — тогда синхронизировать нечего.
+  }
+});
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
     updateBadgeForTab(tabId);
+    syncTabPopup(tab ?? { id: tabId, url: changeInfo.url ?? '' });
   }
 });
 
@@ -157,14 +169,69 @@ async function autoCreatePrimary(ctx, scopeType) {
   return created;
 }
 
-// Применить поведение клика по иконке согласно настройкам.
-async function applyIconClickBehavior() {
-  const settings = await getSettings();
-  if (settings.iconClickAction === 'increment') {
-    await chrome.action.setPopup({ popup: '' });
-  } else {
-    await chrome.action.setPopup({ popup: 'popup/popup.html' });
+// ---------- Режим иконки: общий и по сайтам ----------
+
+const POPUP_PAGE = 'popup/popup.html';
+const MENU_SITE_POPUP = 'site-popup-mode';
+
+// Попап вешается на конкретную вкладку: у Chrome попап вкладки важнее общего.
+// Поэтому на одном сайте иконка открывает попап, а на другом считает кликом,
+// одновременно. Общая настройка задаёт режим по умолчанию для всех.
+function popupFor(settings, url) {
+  return siteModeForUrl(settings, url) === 'popup' ? POPUP_PAGE : '';
+}
+
+// Глобальный попап: новый таб получает его до первого onActivated. Без этого
+// сработал бы default_popup из манифеста, то есть попап у всех подряд.
+async function applyGlobalPopup(settings) {
+  await chrome.action.setPopup({
+    popup: settings.iconClickAction === 'openPopup' ? POPUP_PAGE : '',
+  });
+}
+
+async function applyPopupToTab(tabId, url, knownSettings = null) {
+  const settings = knownSettings ?? (await getSettings());
+  try {
+    await chrome.action.setPopup({ popup: popupFor(settings, url), tabId });
+  } catch (err) {
+    console.warn('[page-counter] setPopup:', err?.message ?? err);
   }
+}
+
+async function applyPopupToAllTabs() {
+  const settings = await getSettings();
+  await applyGlobalPopup(settings);
+  const tabs = await chrome.tabs.query({});
+  await Promise.all(
+    tabs
+      .filter((tab) => tab.id)
+      .map((tab) => applyPopupToTab(tab.id, tab.url ?? '', settings)),
+  );
+}
+
+// Галочка в ПКМ показывает, включён ли попап по клику на текущем сайте.
+function updateSitePopupMenu(checked) {
+  try {
+    chrome.contextMenus.update(MENU_SITE_POPUP, { checked }, () => void chrome.runtime.lastError);
+  } catch {
+    // Меню ещё не создано (воркер только проснулся) — обновится при следующем событии.
+  }
+}
+
+async function syncSitePopupMenu(url) {
+  const settings = await getSettings();
+  updateSitePopupMenu(siteModeForUrl(settings, url) === 'popup');
+}
+
+async function syncTabPopup(tab) {
+  if (!tab?.id) return;
+  await applyPopupToTab(tab.id, tab.url ?? '');
+  await syncSitePopupMenu(tab.url ?? '');
+}
+
+async function syncActiveSitePopupMenu() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  await syncSitePopupMenu(tab?.url ?? '');
 }
 
 // ---------- Context menu на иконке ----------
@@ -179,7 +246,7 @@ function setupContextMenu() {
   contextMenuInProgress = true;
   chrome.contextMenus.removeAll(() => {
     let failed = false;
-    let pending = 2;
+    let pending = 3;
     const onCreated = () => {
       pending -= 1;
       if (pending > 0) return;
@@ -207,6 +274,14 @@ function setupContextMenu() {
       title: t('menu.openManager'),
       contexts: ['action'],
     });
+    // Галочка на текущий сайт: включить или выключить попап по клику.
+    create({
+      id: MENU_SITE_POPUP,
+      title: t('menu.sitePopup'),
+      type: 'checkbox',
+      checked: false,
+      contexts: ['action'],
+    });
   });
 }
 
@@ -216,24 +291,42 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await resetPrimary({ tabId: tab.id, url: tab.url });
   } else if (info.menuItemId === 'open-manager') {
     chrome.runtime.openOptionsPage();
+  } else if (info.menuItemId === MENU_SITE_POPUP) {
+    await toggleSitePopupMode(tab?.url ?? '', info.checked);
   }
 });
 
+// Галочка в меню ставит сайту свой режим. Если он совпал с общим — запись
+// убираем, иначе настройка сайта копила бы «как и так по умолчанию».
+async function toggleSitePopupMode(url, checked) {
+  const host = getDomainFromUrl(url);
+  if (!host) return;
+  const settings = await getSettings();
+  const baseMode = settings.iconClickAction === 'openPopup' ? 'popup' : 'count';
+  const nextMode = checked ? 'popup' : 'count';
+  const siteModes = { ...settings.siteModes };
+  if (nextMode === baseMode) delete siteModes[host];
+  else siteModes[host] = nextMode;
+  await updateSettings({ siteModes });
+  await applyPopupToAllTabs();
+  updateSitePopupMenu(nextMode === 'popup');
+}
+
 chrome.runtime.onInstalled.addListener(() => {
-  applyIconClickBehavior();
+  applyPopupToAllTabs().then(syncActiveSitePopupMenu);
   setupContextMenu();
   updateAllBadges();
 });
 chrome.runtime.onStartup.addListener(() => {
-  applyIconClickBehavior();
+  applyPopupToAllTabs().then(syncActiveSitePopupMenu);
   setupContextMenu();
   updateAllBadges();
 });
 
-// При смене настроек — переключаем popup.
+// При смене настроек — пересчитываем попап у всех вкладок и галочку в меню.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.settings) {
-    applyIconClickBehavior();
+    applyPopupToAllTabs().then(syncActiveSitePopupMenu);
   }
 });
 

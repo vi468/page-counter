@@ -12,7 +12,7 @@ export function installChromeMock({ counters = [], settings, tabs = [DEFAULT_TAB
   const storage = { counters };
   if (settings) storage.settings = settings;
 
-  const calls = { removeAll: 0, create: [], events: [] };
+  const calls = { removeAll: 0, create: [], events: [], setPopup: [], update: [] };
 
   const chromeMock = {
     tabs: {
@@ -46,7 +46,9 @@ export function installChromeMock({ counters = [], settings, tabs = [DEFAULT_TAB
       setBadgeText: async () => {},
       setBadgeBackgroundColor: async () => {},
       setBadgeTextColor: async () => {},
-      setPopup: async () => {},
+      setPopup: async (options) => {
+        calls.setPopup.push(options);
+      },
     },
     runtime: {
       onInstalled: createEvent(),
@@ -65,6 +67,10 @@ export function installChromeMock({ counters = [], settings, tabs = [DEFAULT_TAB
       create: (props, cb) => {
         calls.events.push(`create:${props.id}`);
         calls.create.push(props.id);
+        if (typeof cb === 'function') cb();
+      },
+      update: (id, props, cb) => {
+        calls.update.push({ id, ...props });
         if (typeof cb === 'function') cb();
       },
     },

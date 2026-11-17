@@ -70,8 +70,14 @@ settings the click can be re-assigned to "open the popup".
 - `⋯` — menu: make main, rename, set value, initial value, step, reset, delete
 - "New counter" — name, scope, starting value, step
 
-**Right-click on the icon** gives reset of the main counter and a shortcut to the counter
-manager.
+**Right-click on the icon** gives reset of the main counter, a shortcut to the counter manager
+and the checkbox **"Popup on click on this site"**.
+
+**The click mode can be set per site.** The option in settings is the default for everything; a
+single site can override it with that checkbox — right-click the icon on the site and tick it.
+There the icon opens the popup, while other sites keep counting clicks at the same time. The
+settings page has a **Click mode per site** list with every override: switch it or remove it
+there. Sites without an override follow the default. Hotkeys count on any site in either mode.
 
 **Hotkeys:** `Alt+↑` adds a step to the main counter, `Alt+↓` subtracts, `Alt+0` resets it.
 `Alt+↑` also works on a page without counters: it creates one just like the icon click and
