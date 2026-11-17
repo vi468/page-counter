@@ -1,0 +1,85 @@
+/* ---------------------------------------------------------------------------
+   Page Counter — токены темы.
+   Светлая и тёмная палитры повторяют вид Cleanup for X: тёплый кремовый фон,
+   терракотовый акцент, тонкие линии и мягкие скругления. Тёмная включается
+   сама, когда система перешла в тёмный режим, — своей настройки темы нет.
+   Цвета в popup/ и options/ берутся только отсюда: литерал в вёрстке означает,
+   что в этом месте тёмная тема осталась светлой.
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #f7f4ee;
+  --card: rgba(255, 253, 248, .82);
+  --card-2: rgba(31, 29, 26, .045);
+  --card-3: rgba(31, 29, 26, .09);
+  --line: rgba(31, 29, 26, .10);
+  --line-2: rgba(31, 29, 26, .20);
+  --track: rgba(31, 29, 26, .13);
+  --text: #1f1d1a;
+  --muted: #6f685c;
+  --dim: #8a8275;
+  --accent: #c96442;
+  --accent-2: #a94e31;
+  --accent-soft: rgba(201, 100, 66, .13);
+  --on-accent: #fffdf8;
+  --ok: #4f6b45;
+  --ok-soft: rgba(79, 107, 69, .13);
+  --danger: #a53f3f;
+  --danger-soft: rgba(165, 63, 63, .10);
+  --shadow: 0 1px 2px rgba(31, 29, 26, .05), 0 10px 26px rgba(31, 29, 26, .07);
+  --radius: 16px;
+  --radius-sm: 11px;
+  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b19;
+    --card: rgba(38, 37, 34, .80);
+    --card-2: rgba(242, 238, 230, .06);
+    --card-3: rgba(242, 238, 230, .11);
+    --line: rgba(242, 238, 230, .10);
+    --line-2: rgba(242, 238, 230, .20);
+    --track: rgba(242, 238, 230, .16);
+    --text: #f2eee6;
+    --muted: #a9a295;
+    --dim: #8e867a;
+    --accent: #d97757;
+    --accent-2: #e08a6b;
+    --accent-soft: rgba(217, 119, 87, .16);
+    --on-accent: #241a16;
+    --ok: #a3b784;
+    --ok-soft: rgba(163, 183, 132, .13);
+    --danger: #e58a8a;
+    --danger-soft: rgba(229, 138, 138, .12);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 10px 26px rgba(0, 0, 0, .28);
+  }
+}
+
+/* Общая база попапа и настроек. */
+* { box-sizing: border-box; }
+
+/* Атрибут hidden должен побеждать авторские display: flex в вёрстке: без
+   !important форма нового счётчика и блок подтверждения импорта видны всегда. */
+[hidden] { display: none !important; }
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after { transition: none !important; }
+}
