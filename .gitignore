@@ -5,6 +5,7 @@ node_modules/
 .idea/
 .claude/
 *.zip
+dist/
 
 # Локальные инструкции для агента: в публичном репозитории не нужны.
 AGENTS.md

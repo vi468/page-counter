@@ -52,7 +52,9 @@ There is no store listing, so the extension is loaded from source:
 3. **Load unpacked** → pick the repository folder
 4. The icon appears on the toolbar
 
-After code changes press 🔄 on the extension card so the browser re-reads the files.
+There is also a packaged ZIP in [Releases](https://github.com/vi468/page-counter/releases):
+unpack it anywhere and load that folder. After code changes press 🔄 on the extension card so
+the browser re-reads the files.
 
 ## How to use
 
@@ -138,9 +140,6 @@ There is no build step: the repository folder is the extension. Tests are `npm t
 `node --test` against a mocked `chrome`. Work flows through pull requests: the history is
 `git log`, and a revert is `git revert` or the Revert button on a pull request.
 
-The README is bilingual — this file is the default, the Russian version is
-[README.ru.md](README.ru.md).
-
 ```
 page-counter/
 ├── manifest.json        # MV3, service worker as an ES module
@@ -153,6 +152,7 @@ page-counter/
 ├── options/             # settings, manager of all counters, export and import
 ├── tests/               # node --test
 ├── docs/                # screenshots for this README
+├── scripts/             # package.sh: the release ZIP
 ├── .githooks/           # pre-push: protection of main from direct pushes
 └── icons/               # 16/48/128 PNG and the source SVG
 ```
