@@ -134,12 +134,12 @@ startup rather than twice.
 
 ## Development
 
-Rules of the repository, the data model, architectural constraints and the list of known
-traps live in [AGENTS.md](AGENTS.md) (in Russian). In short: no direct pushes to `main`, work
-happens in a branch, tests are `npm test`.
+There is no build step: the repository folder is the extension. Tests are `npm test` — plain
+`node --test` against a mocked `chrome`. Work flows through pull requests: the history is
+`git log`, and a revert is `git revert` or the Revert button on a pull request.
 
-There is no build step: the repository folder is the extension. The README is bilingual —
-this file is the default, the Russian version is [README.ru.md](README.ru.md).
+The README is bilingual — this file is the default, the Russian version is
+[README.ru.md](README.ru.md).
 
 ```
 page-counter/
@@ -154,7 +154,6 @@ page-counter/
 ├── tests/               # node --test
 ├── docs/                # screenshots for this README
 ├── .githooks/           # pre-push: protection of main from direct pushes
-├── AGENTS.md            # development rules for agents
 └── icons/               # 16/48/128 PNG and the source SVG
 ```
 
