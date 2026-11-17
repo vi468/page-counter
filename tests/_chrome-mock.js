@@ -37,6 +37,10 @@ export function installChromeMock({ counters = [], settings, tabs = [DEFAULT_TAB
       },
     },
     commands: { onCommand: createEvent() },
+    // Мок изображает систему с русским интерфейсом: интерфейс расширения
+    // по умолчанию русский, и существующие тесты проверяют русские строки.
+    // Тесту английского языка достаточно setLang('en') из lib/i18n.js.
+    i18n: { getUILanguage: () => 'ru-RU' },
     action: {
       onClicked: createEvent(),
       setBadgeText: async () => {},

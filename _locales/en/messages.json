@@ -1,0 +1,14 @@
+{
+  "ext_description": {
+    "message": "Counts anything on a page. A counter is tied to a domain, a tab, a URL or the whole browser."
+  },
+  "cmd_increment": {
+    "message": "+1 to the main counter"
+  },
+  "cmd_decrement": {
+    "message": "-1 from the main counter"
+  },
+  "cmd_reset": {
+    "message": "Reset the main counter"
+  }
+}

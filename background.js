@@ -14,6 +14,7 @@ import {
   incrementCounterIn,
   decrementCounterIn,
 } from './lib/storage.js';
+import { t } from './lib/i18n.js';
 
 // ---------- Badge ----------
 
@@ -28,8 +29,10 @@ async function updateBadgeForTab(tabId) {
     const primary = getPrimaryCounter(counters, { tabId, url: tab.url });
     const text = primary ? String(primary.value) : '';
     await chrome.action.setBadgeText({ tabId, text });
-    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#2d7ff9' });
-    await chrome.action.setBadgeTextColor({ tabId, color: '#ffffff' });
+    // Бейдж — тёмная плашка с цифрой: на терракотовой иконке акцентная
+    // подложка слилась бы с фоном, а тёмная читается в обеих темах.
+    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#1f1d1a' });
+    await chrome.action.setBadgeTextColor({ tabId, color: '#fffdf8' });
   } catch {
     // Таб мог быть закрыт — игнорируем.
   }
@@ -141,7 +144,7 @@ async function autoCreatePrimary(ctx, scopeType) {
       isCounterRelevant(c, ctx) && c.isPrimary ? { ...c, isPrimary: false, updatedAt: Date.now() } : c,
     );
     created = createCounter({
-      name: 'Counter',
+      name: t('counter.defaultName'),
       scope,
       initialValue: 0,
       step: 1,
@@ -196,12 +199,12 @@ function setupContextMenu() {
     };
     create({
       id: 'reset-primary',
-      title: 'Сбросить главный счётчик',
+      title: t('menu.resetPrimary'),
       contexts: ['action'],
     });
     create({
       id: 'open-manager',
-      title: 'Открыть менеджер счётчиков',
+      title: t('menu.openManager'),
       contexts: ['action'],
     });
   });

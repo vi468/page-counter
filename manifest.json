@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Page Counter",
+  "default_locale": "en",
   "version": "1.0.0",
-  "description": "Считает что угодно на странице. Привязка к домену, табу, URL или глобально.",
+  "description": "__MSG_ext_description__",
   "permissions": [
     "storage",
     "tabs",
@@ -31,19 +32,19 @@
       "suggested_key": {
         "default": "Alt+Up"
       },
-      "description": "+1 к главному счётчику"
+      "description": "__MSG_cmd_increment__"
     },
     "decrement-primary": {
       "suggested_key": {
         "default": "Alt+Down"
       },
-      "description": "-1 к главному счётчику"
+      "description": "__MSG_cmd_decrement__"
     },
     "reset-primary": {
       "suggested_key": {
         "default": "Alt+0"
       },
-      "description": "Сбросить главный счётчик"
+      "description": "__MSG_cmd_reset__"
     }
   },
   "icons": {

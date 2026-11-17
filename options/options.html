@@ -11,48 +11,61 @@
 
     <form id="settings-form">
       <label class="field">
-        <span>Scope по умолчанию для новых счётчиков</span>
+        <span data-i18n="options.defaultScopeLabel">Scope по умолчанию для новых счётчиков</span>
         <select id="defaultScope">
-          <option value="domain">Domain (example.com)</option>
-          <option value="tab">Tab (только текущая вкладка)</option>
-          <option value="url">URL (точный адрес)</option>
-          <option value="global">Global (один на всё)</option>
+          <option value="domain" data-i18n="options.scopeDomain">Domain (example.com)</option>
+          <option value="tab" data-i18n="options.scopeTab">Tab (только текущая вкладка)</option>
+          <option value="url" data-i18n="options.scopeUrl">URL (точный адрес)</option>
+          <option value="global" data-i18n="options.scopeGlobal">Global (один на всё)</option>
         </select>
       </label>
 
       <label class="field">
-        <span>Клик по иконке расширения</span>
+        <span data-i18n="options.iconClickLabel">Клик по иконке расширения</span>
         <select id="iconClickAction">
-          <option value="increment">+N к главному счётчику</option>
-          <option value="openPopup">Открыть попап</option>
+          <option value="increment" data-i18n="options.iconClickIncrement">
+            +N к главному счётчику
+          </option>
+          <option value="openPopup" data-i18n="options.iconClickPopup">Открыть попап</option>
         </select>
       </label>
 
       <div class="actions">
-        <button type="submit" class="primary-btn">Сохранить</button>
-        <span id="saved-msg" class="saved-msg" hidden>Сохранено ✓</span>
+        <button type="submit" class="primary-btn" data-i18n="options.save">Сохранить</button>
+        <span id="saved-msg" class="saved-msg" data-i18n="options.saved" hidden>Сохранено ✓</span>
       </div>
     </form>
 
     <section class="counters-section">
-      <h2>Все счётчики</h2>
+      <h2 data-i18n="options.allCounters">Все счётчики</h2>
       <div id="counters-manager" class="counters-manager"></div>
     </section>
 
     <section class="data-section">
-      <h2>Данные</h2>
+      <h2 data-i18n="options.dataSection">Данные</h2>
       <div class="actions">
-        <button id="export-btn" type="button" class="ghost-btn">Экспорт JSON</button>
-        <button id="import-btn" type="button" class="ghost-btn">Импорт JSON</button>
+        <button id="export-btn" type="button" class="ghost-btn" data-i18n="options.export">
+          Экспорт JSON
+        </button>
+        <button id="import-btn" type="button" class="ghost-btn" data-i18n="options.import">
+          Импорт JSON
+        </button>
         <input id="import-file" type="file" accept="application/json" hidden />
       </div>
       <div id="import-confirm" class="import-confirm" hidden>
         <span id="import-confirm-text"></span>
-        <button id="import-apply" type="button" class="primary-btn">Импортировать</button>
-        <button id="import-cancel" type="button" class="ghost-btn">Отмена</button>
+        <button id="import-apply" type="button" class="primary-btn" data-i18n="options.importApply">
+          Импортировать
+        </button>
+        <button id="import-cancel" type="button" class="ghost-btn" data-i18n="common.cancel">
+          Отмена
+        </button>
       </div>
       <p id="import-result" class="import-result" hidden></p>
-      <p class="hint">Все данные хранятся локально в <code>chrome.storage.local</code>.</p>
+      <p class="hint">
+        <span data-i18n="options.hintBefore">Все данные хранятся локально в</span>
+        <code>chrome.storage.local</code>.
+      </p>
     </section>
 
     <script type="module" src="options.js"></script>

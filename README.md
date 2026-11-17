@@ -17,6 +17,10 @@ profile.
 The theme follows the system setting; the dark variant is in
 [`docs/popup-dark.png`](docs/popup-dark.png) and [`docs/options-dark.png`](docs/options-dark.png).
 
+The interface is bilingual: English by default, Russian when the browser UI language is
+Russian. Russian screenshots: [`docs/popup.ru.png`](docs/popup.ru.png),
+[`docs/options.ru.png`](docs/options.ru.png).
+
 ## Contents
 
 - [What it is](#what-it-is)
@@ -137,6 +141,8 @@ page-counter/
 ├── theme.css            # light/dark tokens, shared page base
 ├── background.js        # worker: badge, hotkeys, icon click and right-click, tab cleanup
 ├── lib/storage.js       # chrome.storage, Counter model, scope logic
+├── lib/i18n.js          # interface strings: Russian and English dictionaries
+├── _locales/            # manifest strings (description, hotkey descriptions) for Chrome
 ├── popup/               # counters of the current page
 ├── options/             # settings, manager of all counters, export and import
 ├── tests/               # node --test
@@ -156,5 +162,6 @@ page-counter/
   appear there.
 - The main counter is one per context: making another one main clears the flag on the
   previous one.
-- **The interface is in Russian for now.** There is no locale switching yet — the popup,
-  settings and context menu are Russian regardless of the browser language.
+- **The interface has two languages: English and Russian.** The language follows the browser
+  UI language, and there is no separate switch inside the extension; any other locale falls
+  back to English.
